@@ -1,0 +1,4 @@
+1 - requirements.txt file has been added.
+** 2 - README.md file need to be check.
+3 - config.yaml - need to check after running the pipelines 
+4 - 
