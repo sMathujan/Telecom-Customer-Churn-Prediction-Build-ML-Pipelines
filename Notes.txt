@@ -1,4 +1,6 @@
+conda create -n production-ml python=3.12
 1 - requirements.txt file has been added.
 ** 2 - README.md file need to be check.
 3 - config.yaml - need to check after running the pipelines 
-4 - 
+4 - config.py file added
+5 - raw data has been added
