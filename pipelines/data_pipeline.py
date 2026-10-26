@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import mlflow
 import pandas as pd
 
+from src.data_cleaning import TelcoDataCleaner
 from src.data_ingestion import DataIngestorCSV
 from utils.config import (get_cleaning_config, get_columns, get_encoding_config,
                           get_missing_values_config, get_outlier_config, get_path,
@@ -39,6 +40,13 @@ def data_pipeline(force_rebuild: bool = False) -> Dict[str, pd.DataFrame]:
     print("DF")
     print(df.head())
 
+    # 2. Clean (TotalCharges → numeric, normalise service categories, drop ID)
+    clean_cfg = get_cleaning_config()
+    cleaner = TelcoDataCleaner(clean_cfg["coerce_numeric"], clean_cfg["category_normalisation"],
+                                   clean_cfg["normalise_columns"], cols["drop_columns"])
+    df = cleaner.clean(df)
+    print("Cleaned DF")
+    print(df.head())
 
 
 if __name__ == "__main__":
