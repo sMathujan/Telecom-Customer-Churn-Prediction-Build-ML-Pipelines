@@ -17,6 +17,7 @@ import pandas as pd
 
 from src.data_cleaning import TelcoDataCleaner
 from src.data_ingestion import DataIngestorCSV
+from src.handle_missing_values import DropMissingValuesStrategy
 from utils.config import (get_cleaning_config, get_columns, get_encoding_config,
                           get_missing_values_config, get_outlier_config, get_path,
                           get_splitting_config)
@@ -47,6 +48,15 @@ def data_pipeline(force_rebuild: bool = False) -> Dict[str, pd.DataFrame]:
     df = cleaner.clean(df)
     print("Cleaned DF")
     print(df.head())
+
+    # 3. Missing values (the 11 tenure-0 rows with blank TotalCharges)
+    before = len(df)
+    mv_cfg = get_missing_values_config()
+    df = DropMissingValuesStrategy(mv_cfg["critical_columns"]).handle(df)
+    print("Missing Values Handled DF")
+    print({"rows_removed": before - len(df)})
+    # log_stage_metrics(df, "missing_handled", {"rows_removed": before - len(df)})
+
 
 
 if __name__ == "__main__":
