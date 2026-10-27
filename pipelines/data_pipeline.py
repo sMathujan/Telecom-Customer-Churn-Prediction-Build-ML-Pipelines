@@ -18,6 +18,7 @@ import pandas as pd
 from src.data_cleaning import TelcoDataCleaner
 from src.data_ingestion import DataIngestorCSV
 from src.handle_missing_values import DropMissingValuesStrategy
+from src.outlier_detection import IQROutlierDetection, OutlierDetector
 from utils.config import (get_cleaning_config, get_columns, get_encoding_config,
                           get_missing_values_config, get_outlier_config, get_path,
                           get_splitting_config)
@@ -57,7 +58,15 @@ def data_pipeline(force_rebuild: bool = False) -> Dict[str, pd.DataFrame]:
     print({"rows_removed": before - len(df)})
     # log_stage_metrics(df, "missing_handled", {"rows_removed": before - len(df)})
 
-
+    # 4. Outliers (report-only by default)
+    out_cfg = get_outlier_config()
+    n_outliers = 0
+    if out_cfg.get("enabled", True):
+        df, n_outliers = OutlierDetector(IQROutlierDetection(out_cfg.get("iqr_multiplier", 1.5))) \
+            .handle_outliers(df, out_cfg["columns"], out_cfg.get("handling_method", "report"))
+    print("Outlier Detection")
+    print({"outlier_rows": n_outliers})
+    # log_stage_metrics(df, "outliers_checked", {"outlier_rows": n_outliers})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the churn data pipeline")
