@@ -19,6 +19,7 @@ from src.data_cleaning import TelcoDataCleaner
 from src.data_ingestion import DataIngestorCSV
 from src.handle_missing_values import DropMissingValuesStrategy
 from src.outlier_detection import IQROutlierDetection, OutlierDetector
+from src.feature_encoding import encode_target
 from utils.config import (get_cleaning_config, get_columns, get_encoding_config,
                           get_missing_values_config, get_outlier_config, get_path,
                           get_splitting_config)
@@ -67,6 +68,12 @@ def data_pipeline(force_rebuild: bool = False) -> Dict[str, pd.DataFrame]:
     print("Outlier Detection")
     print({"outlier_rows": n_outliers})
     # log_stage_metrics(df, "outliers_checked", {"outlier_rows": n_outliers})
+
+    # 5. Target → 0/1 (stateless) and persist the cleaned dataset
+    df[target] = encode_target(df[target], get_encoding_config()["target_mapping"])
+    os.makedirs(os.path.dirname(get_path("cleaned_data")), exist_ok=True)
+    df.to_csv(get_path("cleaned_data"), index=False)
+    # create_eda_visualisations(df, target, os.path.join(get_path("artifacts_dir"), "eda"))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the churn data pipeline")
