@@ -19,6 +19,7 @@ from src.data_cleaning import TelcoDataCleaner
 from src.data_ingestion import DataIngestorCSV
 from src.handle_missing_values import DropMissingValuesStrategy
 from src.outlier_detection import IQROutlierDetection, OutlierDetector
+from src.data_splitter import StratifiedThreeWaySplitStrategy
 from src.feature_encoding import encode_target
 from utils.config import (get_cleaning_config, get_columns, get_encoding_config,
                           get_missing_values_config, get_outlier_config, get_path,
@@ -74,6 +75,15 @@ def data_pipeline(force_rebuild: bool = False) -> Dict[str, pd.DataFrame]:
     os.makedirs(os.path.dirname(get_path("cleaned_data")), exist_ok=True)
     df.to_csv(get_path("cleaned_data"), index=False)
     # create_eda_visualisations(df, target, os.path.join(get_path("artifacts_dir"), "eda"))
+
+    # 6. Split FIRST (stratified 60/20/20) ...
+    split_cfg = get_splitting_config()
+    splits = StratifiedThreeWaySplitStrategy(
+        split_cfg["test_size"], split_cfg["val_size"], split_cfg["random_state"]
+    ).split_data(df, target)
+    print("Data Splitted")
+    # print({"Splits": splits})
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the churn data pipeline")
